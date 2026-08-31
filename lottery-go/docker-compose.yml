@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lottery
+      POSTGRES_PASSWORD: lottery
+      POSTGRES_DB: lottery
+    ports:
+      - "5432:5432"
+    volumes:
+      - lottery-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lottery -d lottery"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    # Ten million narrow rows is small, but the claim path is index-driven and
+    # benefits from cache. Raise these when demonstrating at full scale.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - work_mem=32MB
+
+volumes:
+  lottery-data:
